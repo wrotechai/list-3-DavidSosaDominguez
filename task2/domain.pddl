@@ -22,10 +22,35 @@
   (:types robot room)
 
   (:predicates
-    ; TODO: declare (at ...), (dirty ...), (clean ...)
+    (at        ?r - robot ?p - room)    ; the robot is in a room
+    (dirty     ?p - room)               ; the room is dirty
+    (clean     ?p - room)               ; the room is clean
+    (connected ?from - room ?to - room) ; adjacency between rooms
   )
 
-  ; TODO: (:action move ...)
+  ; Move the robot from one room to an adjacent room
+  (:action move
+    :parameters (?r - robot ?from - room ?to - room)
+    :precondition (and
+      (at ?r ?from)
+      (connected ?from ?to)
+    )
+    :effect (and
+      (at ?r ?to)
+      (not (at ?r ?from))
+    )
+  )
 
-  ; TODO: (:action clean ...)
+  ; Clean the room the robot is currently in (must be dirty)
+  (:action clean
+    :parameters (?r - robot ?p - room)
+    :precondition (and
+      (at    ?r ?p)
+      (dirty ?p)
+    )
+    :effect (and
+      (clean ?p)
+      (not (dirty ?p))
+    )
+  )
 )
