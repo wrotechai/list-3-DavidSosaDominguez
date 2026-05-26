@@ -23,7 +23,7 @@
 ; the autograder falls back to it. Test at https://editor.planning.domains.
 
 (define (domain package-transport)
-  (:requirements :strips :typing :negative-preconditions)
+  (:requirements :strips :typing)
 
   (:types
     location  - object   ; generic location (super-type)
@@ -49,7 +49,6 @@
     :precondition (and
       (at         ?p ?l)
       (vehicle-at ?v ?l)
-      (not (in    ?p ?v))
     )
     :effect (and
       (in  ?p ?v)
