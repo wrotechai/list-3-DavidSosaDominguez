@@ -23,7 +23,7 @@
 ; the autograder falls back to it. Test at https://editor.planning.domains.
 
 (define (domain package-transport)
-  (:requirements :strips :typing :negative-preconditions :action-costs)
+  (:requirements :strips :typing :negative-preconditions)
 
   (:types
     location  - object   ; generic location (super-type)
@@ -34,18 +34,13 @@
     package   - object
   )
 
-  (:functions
-    (total-cost)
-    (move-cost ?from - location ?to - location)
-  )
-
   (:predicates
-    (at          ?p - package ?l - location)          ; package is at location
-    (in          ?p - package ?v - vehicle)           ; package is loaded on vehicle
-    (vehicle-at  ?v - vehicle ?l - location)          ; vehicle is at location
-    (road-connected ?from - road-loc ?to - road-loc)  ; road link between two road locations
-    (air-connected  ?from - airport  ?to - airport)   ; air link between two airports
-    (sea-connected  ?from - port-loc ?to - port-loc)  ; sea link between two ports
+    (at          ?p - package ?l - location)           ; package is at location
+    (in          ?p - package ?v - vehicle)            ; package is loaded on vehicle
+    (vehicle-at  ?v - vehicle ?l - location)           ; vehicle is at location
+    (road-connected ?from - road-loc ?to - road-loc)   ; road link
+    (air-connected  ?from - airport  ?to - airport)    ; air link
+    (sea-connected  ?from - port-loc ?to - port-loc)   ; sea link
   )
 
   ; ── LOAD: put a package onto a vehicle (both at the same location) ──
@@ -54,11 +49,11 @@
     :precondition (and
       (at         ?p ?l)
       (vehicle-at ?v ?l)
+      (not (in    ?p ?v))
     )
     :effect (and
       (in  ?p ?v)
       (not (at ?p ?l))
-      (increase (total-cost) 1)
     )
   )
 
@@ -72,7 +67,6 @@
     :effect (and
       (at  ?p ?l)
       (not (in ?p ?v))
-      (increase (total-cost) 1)
     )
   )
 
@@ -86,7 +80,6 @@
     :effect (and
       (vehicle-at     ?v ?to)
       (not (vehicle-at ?v ?from))
-      (increase (total-cost) (move-cost ?from ?to))
     )
   )
 
@@ -100,7 +93,6 @@
     :effect (and
       (vehicle-at    ?v ?to)
       (not (vehicle-at ?v ?from))
-      (increase (total-cost) (move-cost ?from ?to))
     )
   )
 
@@ -114,7 +106,6 @@
     :effect (and
       (vehicle-at    ?v ?to)
       (not (vehicle-at ?v ?from))
-      (increase (total-cost) (move-cost ?from ?to))
     )
   )
 )
