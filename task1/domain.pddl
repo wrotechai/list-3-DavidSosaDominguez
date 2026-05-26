@@ -23,19 +23,98 @@
 ; the autograder falls back to it. Test at https://editor.planning.domains.
 
 (define (domain package-transport)
-  (:requirements :strips :typing)
+  (:requirements :strips :typing :negative-preconditions :action-costs)
+
   (:types
-    ; TODO: e.g. package location vehicle
+    location  - object   ; generic location (super-type)
+    road-loc  - location ; reachable by truck
+    airport   - location ; reachable by plane
+    port-loc  - location ; reachable by ship
+    vehicle   - object
+    package   - object
+  )
+
+  (:functions
+    (total-cost)
+    (move-cost ?from - location ?to - location)
   )
 
   (:predicates
-    ; TODO: e.g. (at ?p - package ?l - location)
-    ;            (in ?p - package ?v - vehicle)
-    ;            (vehicle-at ?v - vehicle ?l - location)
-    ;            (connected ?from - location ?to - location)
+    (at          ?p - package ?l - location)          ; package is at location
+    (in          ?p - package ?v - vehicle)           ; package is loaded on vehicle
+    (vehicle-at  ?v - vehicle ?l - location)          ; vehicle is at location
+    (road-connected ?from - road-loc ?to - road-loc)  ; road link between two road locations
+    (air-connected  ?from - airport  ?to - airport)   ; air link between two airports
+    (sea-connected  ?from - port-loc ?to - port-loc)  ; sea link between two ports
   )
 
-  ; TODO: (:action load ...)
-  ; TODO: (:action move ...)   ; or drive / fly / sail per transport mode
-  ; TODO: (:action unload ...)
+  ; ── LOAD: put a package onto a vehicle (both at the same location) ──
+  (:action load
+    :parameters (?p - package ?v - vehicle ?l - location)
+    :precondition (and
+      (at         ?p ?l)
+      (vehicle-at ?v ?l)
+    )
+    :effect (and
+      (in  ?p ?v)
+      (not (at ?p ?l))
+      (increase (total-cost) 1)
+    )
+  )
+
+  ; ── UNLOAD: take a package off a vehicle at the current location ──
+  (:action unload
+    :parameters (?p - package ?v - vehicle ?l - location)
+    :precondition (and
+      (in         ?p ?v)
+      (vehicle-at ?v ?l)
+    )
+    :effect (and
+      (at  ?p ?l)
+      (not (in ?p ?v))
+      (increase (total-cost) 1)
+    )
+  )
+
+  ; ── DRIVE: truck moves along a road connection ──
+  (:action drive
+    :parameters (?v - vehicle ?from - road-loc ?to - road-loc)
+    :precondition (and
+      (vehicle-at     ?v ?from)
+      (road-connected ?from ?to)
+    )
+    :effect (and
+      (vehicle-at     ?v ?to)
+      (not (vehicle-at ?v ?from))
+      (increase (total-cost) (move-cost ?from ?to))
+    )
+  )
+
+  ; ── FLY: plane moves along an air connection ──
+  (:action fly
+    :parameters (?v - vehicle ?from - airport ?to - airport)
+    :precondition (and
+      (vehicle-at    ?v ?from)
+      (air-connected ?from ?to)
+    )
+    :effect (and
+      (vehicle-at    ?v ?to)
+      (not (vehicle-at ?v ?from))
+      (increase (total-cost) (move-cost ?from ?to))
+    )
+  )
+
+  ; ── SAIL: ship moves along a sea connection ──
+  (:action sail
+    :parameters (?v - vehicle ?from - port-loc ?to - port-loc)
+    :precondition (and
+      (vehicle-at    ?v ?from)
+      (sea-connected ?from ?to)
+    )
+    :effect (and
+      (vehicle-at    ?v ?to)
+      (not (vehicle-at ?v ?from))
+      (increase (total-cost) (move-cost ?from ?to))
+    )
+  )
 )

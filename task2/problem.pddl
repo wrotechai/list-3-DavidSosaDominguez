@@ -6,17 +6,31 @@
   (:domain vacuum-robot)
 
   (:objects
-    ; TODO: robot - robot
-    ; TODO: pokoj1 pokoj2 pokoj3 - room
+    robot                    - robot
+    pokoj1  pokoj2  pokoj3   - room
   )
 
   (:init
-    ; TODO: place the robot, mark rooms dirty, connect/allow movement as needed
+    ; robot starts in pokoj1
+    (at robot pokoj1)
+
+    ; all rooms are dirty at the start
+    (dirty pokoj1)
+    (dirty pokoj2)
+    (dirty pokoj3)
+
+    ; corridor topology: pokoj1 -- pokoj2 -- pokoj3 (bidirectional)
+    (connected pokoj1 pokoj2)
+    (connected pokoj2 pokoj1)
+    (connected pokoj2 pokoj3)
+    (connected pokoj3 pokoj2)
   )
 
   (:goal
     (and
-      ; TODO: (clean pokoj1) (clean pokoj2) (clean pokoj3)
+      (clean pokoj1)
+      (clean pokoj2)
+      (clean pokoj3)
     )
   )
 )
